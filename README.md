@@ -16,11 +16,6 @@ This project implements web scraping functionality to extract data about compani
 * **Node.js** : Node.js is used as the backend runtime environment for executing JavaScript code.
 * **Puppeteer** : Puppeteer is a Node.js library that provides a high-level API to control headless Chrome or Chromium, enabling web scraping and automated testing of web pages.
 
-## Installation
-
-1. Clone the repository to your local machine.
-2. Install Node.js if you haven't already.
-3. Install the required dependencies by running `npm install`.
 
 ## Usage
 
