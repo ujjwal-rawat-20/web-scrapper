@@ -28,7 +28,7 @@ let count = 0;
 
 
   await page.waitForSelector('.search-global-typeahead__input');
-  await page.type('.search-global-typeahead__input', 'education');
+  await page.type('.search-global-typeahead__input', 'technology');
   await page.keyboard.press('Enter');
 
   await page.waitForSelector('.search-reusables__filter-list');
@@ -44,13 +44,13 @@ let count = 0;
   }
   searchFilters[index].click();
 
-  await page.waitForSelector("#searchFilter_companyHqGeo");
+  await page.waitForSelector("#searchFilter_companyHqGeo");         //global input
   const filterButton  = await page.$("#searchFilter_companyHqGeo");
   await filterButton.click();
 
-  const selector = 'input[aria-label="Add a location"]';
+  const selector = 'input[aria-label="Add a location"]';    // location button
   await page.waitForSelector(selector);
-  await page.type(selector, "India");
+  await page.type(selector, "Riyadh");
 
   const locationListId = await page.$eval(selector, value => value.getAttribute("aria-controls"));
   await page.waitForSelector(`#${locationListId}`);
@@ -58,41 +58,49 @@ let count = 0;
   const spanElement = await locationList.$("span");
   await spanElement.click();
 
-  let showResultDataControlName = 'button[data-control-name="filter_show_results"]';
+  let showResultDataControlName = 'button[aria-label="Apply current filter to show results"]';    // show button
   const showResultButton = await page.$(showResultDataControlName);
   await showResultButton.click();
 
 
-  await page.waitForSelector("#searchFilter_industryCompanyVertical");
+  await page.waitForSelector("#searchFilter_industryCompanyVertical");  // industry button
   await page.click("#searchFilter_industryCompanyVertical");
   
-  const industryDataLabel = 'input[aria-label="Add an industry"]';
+  const industryDataLabel = 'input[aria-label="Add an industry"]';  // typing in industry input
   await page.waitForSelector(industryDataLabel);
-  await page.type(industryDataLabel, "education");
+  await page.type(industryDataLabel, "Logistics");
 
   const industryListId = await page.$eval(industryDataLabel, value => value.getAttribute("aria-controls"));
   await page.waitForSelector(`#${industryListId}`);
   const industryList = await page.$(`#${industryListId}`);
   const industryElement = await industryList.$("span");
-  await industryElement.click();
+  await industryElement.click();  // clicking on industry button
 
-  const applyFilterButton = await page.waitForSelector('button[data-control-name="filter_show_results"]');
-  let Allbuttons =await page.$$('button[data-control-name="filter_show_results"]')
-  await Allbuttons[1].click();
+  const applyFilterButton = await page.waitForSelector('button[aria-label="Apply current filter to show results"]');
+  let Allbuttons =await page.$$('button[aria-label="Apply current filter to show results"]')
+  await Allbuttons[1].click();  // show button
 
-  await page.waitForSelector("#searchFilter_companySize");
+  await page.waitForSelector("#searchFilter_companySize");      // company size button
   const companySizeButton = await page.$("#searchFilter_companySize");
   await companySizeButton.click();
 
-  await page.waitForSelector("#companySize-C");
-  const companySize = await page.$("#companySize-C");
-  await companySize.click();
+  await page.waitForSelector("#companySize-C");     // selcting company size
+  const companySize_1 = await page.$("#companySize-C");
+  await companySize_1.click();
 
-  await page.waitForSelector('button[data-control-name="filter_show_results"]');
-  Allbuttons =await page.$$('button[data-control-name="filter_show_results"]')
+  await page.waitForSelector("#companySize-D");     // selcting company size
+  const companySize_2 = await page.$("#companySize-D");
+  await companySize_2.click();
+
+  await page.waitForSelector("#companySize-E");     // selcting company size
+  const companySize_3 = await page.$("#companySize-E");
+  await companySize_3.click();
+
+  await page.waitForSelector('button[aria-label="Apply current filter to show results"]');
+  Allbuttons =await page.$$('button[aria-label="Apply current filter to show results"]')      // clicking on show button
   await Allbuttons[2].click(); 
   
- const nextPageButton =  await page.waitForSelector(".artdeco-button--icon-right");
+ const nextPageButton =  await page.waitForSelector(".artdeco-button--icon-right");     // next page button
  let nextPageProperty = await (await nextPageButton.getProperty('disabled')).jsonValue();
 
 
@@ -104,9 +112,9 @@ let count = 0;
         const link = await (await i.getProperty('href')).jsonValue();
         let newPage = await browser.newPage();
         let n = await (captureData(newPage, link)); // to save data:
-        if(n === -1) {
+        if(n === -1) {  // termination condition
            arrayToSheet(data, "dataFile");
-           return await page.close();
+           return;
         }
 
         await page.waitForSelector(".artdeco-button--icon-right");
@@ -115,49 +123,68 @@ let count = 0;
 
     await page.waitForSelector(".artdeco-button--icon-right");
     const nextBtn = await page.$(".artdeco-button--icon-right");
-    await nextBtn.click();
+    await nextBtn.click();  
     await page.waitForNavigation();
     nextPageProperty = await (await nextPageButton.getProperty('disabled')).jsonValue();
   }
 })();
 
-async function captureData(pg, link) {
+
+
+async function captureData(pg, link) {      // to save the data of each company
     try {
+        const pageData = {
+            "Name": null,
+            "Website": null,
+            "Industry": null,
+            "Company size": null,
+            "Headquarters": null,
+            "Phone": null
+        }
+
         await pg.goto(link+"about");
         await pg.waitForSelector(".org-page-details-module__card-spacing ");
         const companyDetails = await pg.$(".org-page-details-module__card-spacing ");
-        const dl = await companyDetails.$("dl");
-        const allDl = await dl.$$("dd");
 
-        const spanWebsite = await allDl[0].$("span");
-        const website = await (await spanWebsite.getProperty('textContent')).jsonValue();
-        
-        const spanPhoneNumber = await allDl[1].$("span");
-        const phonenumber = await (await spanPhoneNumber.getProperty('textContent')).jsonValue();
-        
-        const spanIndustry = await allDl[2].$("span"); let industry;
-        if(!spanIndustry) 
-          industry = await (await allDl[2].getProperty('textContent')).jsonValue();
-        else
-            industry = await (await spanIndustry.getProperty('textContent')).jsonValue();
-        
-        const spanCompanySize = await allDl[3].$("span"); let companySize;
-        if(!spanCompanySize)
-            companySize = await (await allDl[3].getProperty('textContent')).jsonValue();
-        else
-            companySize = await (await spanCompanySize.getProperty('textContent')).jsonValue();
+        await pg.waitForSelector('h1')
+        let titlepart = await pg.$('h1')
+        let titleContent = await pg.evaluate(element => element.textContent, titlepart)
+        pageData["Name"] = titleContent.trim();
 
-        const obj = {
-            website: website.trim(),
-            phonenumber: phonenumber.trim(),
-            industry: industry.trim(),
-            companySize: companySize.trim()
+        await pg.waitForSelector('dl')
+        const dl = await pg.$('dl')
+        const allDd = await dl.$$('dd')
+ 
+        const headings = await pg.$$('dt')
+        const headingsData = await pg.$$('dd');
+ 
+ 
+        for (let i = 0; i < headings.length; i++) {
+            let itemsData = await pg.evaluate(element => element.textContent.trim(), headings[i]);
+            // console.log(itemsData);
+
+            if (itemsData.trim() == "Website") {
+                let itemsValue = await pg.evaluate(element => element.textContent, headingsData[i])
+                pageData[itemsData] = itemsValue.trim();
+            } else if (itemsData.trim() == "Industry") {
+                let itemsValue = await pg.evaluate(element => element.textContent, headingsData[i])
+                pageData[itemsData] = itemsValue.trim();
+            } else if (itemsData.trim() == "Company size") {
+                let itemsValue = await pg.evaluate(element => element.textContent, headingsData[i])
+                pageData[itemsData] = itemsValue.trim();
+            } else if(itemsData.trim() === "Headquarters") {
+                let itemsValue = await pg.evaluate(element => element.textContent, headingsData[i+1]);
+                pageData[itemsData] = itemsValue.trim();
+            } else if(itemsData.trim() === "Phone") {
+                let itemsValue = await pg.evaluate(element => element.textContent, headingsData[i])
+                pageData[itemsData] = itemsValue.trim();
+            }
         }
 
-        data.push(obj);
+        data.push(pageData);
         count++;
         console.log(count);
-        if(count === 10) return -1;
+        if(count === 5) return -1;
 
     } catch (error) {
         // console.log(error);   
