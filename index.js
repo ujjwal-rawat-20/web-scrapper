@@ -184,7 +184,7 @@ async function captureData(pg, link) {      // to save the data of each company
         data.push(pageData);
         count++;
         console.log(count);
-        if(count === 5) return -1;
+        if(count === 50) return -1;
 
     } catch (error) {
         // console.log(error);   
